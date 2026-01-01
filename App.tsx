@@ -25,6 +25,7 @@ import { Overload } from './pages/Overload';
 import { Sigils } from './pages/Sigils';
 import { ImageAudit } from './pages/ImageAudit';
 import { AuthModal } from './components/AuthModal';
+import './index.css';
 
 interface AuthContextType {
     user: any;
@@ -32,7 +33,7 @@ interface AuthContextType {
     login: () => void;
     signup: () => void;
     logout: () => void;
-    refreshBalance: (newVal?: number) => void;
+    refreshBalance: (arg?: number | string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -67,11 +68,19 @@ export default function App() {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
 
-    const refreshBalance = async (newVal?: number) => {
-        if (typeof newVal === 'number') { setBalance(newVal); return; }
-        if (!user) return;
+    const refreshBalance = async (arg?: number | string) => {
+        // If argument is a number, set balance directly (Optimistic UI)
+        if (typeof arg === 'number') { 
+            setBalance(arg); 
+            return; 
+        }
+        
+        // If argument is a string, treat as User ID. Otherwise fallback to current state user.
+        const targetUserId = typeof arg === 'string' ? arg : user?.id;
+        if (!targetUserId) return;
+
         try {
-            const data = await GameService.getUserData(user.id);
+            const data = await GameService.getUserData(targetUserId);
             if (data) setBalance(data.balance);
         } catch (e) { console.error(e); }
     };

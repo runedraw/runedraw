@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../App';
@@ -59,7 +60,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, initia
 
             } else {
                 // --- LOG IN FLOW ---
-                const { error } = await supabase.auth.signInWithPassword({
+                const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password,
                 });
@@ -67,7 +68,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess, initia
                 if (error) throw error;
 
                 // Login successful
-                await refreshBalance();
+                if (data.user) {
+                    // Explicitly pass ID to fetch balance immediately before global state updates
+                    await refreshBalance(data.user.id);
+                } else {
+                    await refreshBalance();
+                }
+                
                 onSuccess();
                 onClose();
             }
