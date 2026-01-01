@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../App';
@@ -192,7 +191,7 @@ export const Overload: React.FC = () => {
                             ) : (
                                 <button 
                                     onClick={startGame}
-                                    disabled={gameState === 'running' || isProcessing}
+                                    disabled={isProcessing}
                                     className="w-full sm:w-48 py-4 bg-neon1 text-black font-black uppercase text-lg rounded-xl hover:bg-white hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isProcessing ? 'IGNITING...' : 'IGNITE'}

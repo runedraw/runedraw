@@ -332,7 +332,7 @@ export const SoloGame: React.FC = () => {
                                 <div className="flex flex-wrap gap-2 justify-center mt-2">
                                     {results.map((r, i) => (
                                         <div key={i} className="w-8 h-8 rounded border border-white/20 flex items-center justify-center text-sm bg-[#1a1d2e] relative group" title={r.item_name}>
-                                            {(r.item_icon?.includes('/') || r.item_icon?.startsWith('data:')) ? <img src={r.item_icon} alt="" className="w-full h-full object-contain p-1 brightness-125" /> : r.item_icon}
+                                            {(r.item_icon?.includes('/') || r.item_icon?.startsWith('data:')) ? <img src={r.item_icon} alt="" crossOrigin="anonymous" className="w-full h-full object-contain p-1 brightness-125" /> : r.item_icon}
                                             <div className="absolute bottom-0 right-0 w-2 h-2 rounded-full" style={{ backgroundColor: TIER_COLORS[r.tier] }}></div>
                                             {r.is_golden && (
                                                 <div className="absolute -top-3 -right-3 bg-yellow-400 text-black text-[8px] font-bold px-1 rounded shadow-sm scale-75">
@@ -373,7 +373,7 @@ export const SoloGame: React.FC = () => {
                             <div key={i} className={`flex items-center justify-between bg-white/5 p-2 rounded border-l-4 animate-slide-in ${h.is_golden ? 'bg-yellow-900/10' : ''}`} style={{ borderLeftColor: TIER_COLORS[h.tier] || '#444' }}>
                                 <div className="flex items-center gap-3">
                                     <div className={`w-10 h-10 rounded flex items-center justify-center text-xl shadow-inner border overflow-hidden ${h.is_golden ? 'border-yellow-500/50 bg-yellow-900/20' : 'border-white/5 bg-black/40'}`}>
-                                        {(h.item_icon?.includes('/') || h.item_icon?.startsWith('data:')) ? <img src={h.item_icon} alt="" className="w-full h-full object-contain p-1 brightness-125" /> : h.item_icon}
+                                        {(h.item_icon?.includes('/') || h.item_icon?.startsWith('data:')) ? <img src={h.item_icon} alt="" crossOrigin="anonymous" className="w-full h-full object-contain p-1 brightness-125" /> : h.item_icon}
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">

@@ -237,6 +237,7 @@ export const Rewards: React.FC = () => {
                             <div className="relative mb-4 mt-8 group w-full flex justify-center">
                                 <img 
                                     src={getBoxImageUrl(box.image)} 
+                                    crossOrigin="anonymous"
                                     className={`w-32 h-32 object-contain transition-transform duration-500 brightness-110 ${isReady ? 'group-hover:scale-110 drop-shadow-[0_0_15px_rgba(109,249,255,0.3)]' : ''}`}
                                     alt={box.name}
                                 />
@@ -359,7 +360,7 @@ export const Rewards: React.FC = () => {
                             <div className="flex flex-col items-center animate-slide-in w-full">
                                 <div className="w-24 h-24 mb-4 relative flex items-center justify-center bg-[#1a1d2e] rounded-xl border-2" style={{ borderColor: TIER_COLORS[spinResult.tier] || '#fff' }}>
                                     {spinResult.item_icon ? (
-                                        <img src={spinResult.item_icon} alt={spinResult.item_name} className="w-full h-full object-contain p-2" />
+                                        <img src={spinResult.item_icon} alt={spinResult.item_name} crossOrigin="anonymous" className="w-full h-full object-contain p-2" />
                                     ) : (
                                         <div className="text-5xl drop-shadow-xl">🎁</div>
                                     )}

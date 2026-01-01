@@ -266,19 +266,20 @@ export const BattleReplay: React.FC = () => {
          if (rawWeights.every(w => w === 0)) rawWeights.fill(1);
 
         const teamMap = new Map<number, number>();
-        // Use forEach to avoid index type inference issues
-        replayData.result.player_teams.forEach((teamId: number, i: number) => {
+        // Fix: Use for loop to avoid index type inference issues with forEach in strict mode
+        for (let i = 0; i < replayData.result.player_teams.length; i++) {
+            const teamId = replayData.result.player_teams[i];
             const current = teamMap.get(teamId) || 0;
             teamMap.set(teamId, current + (rawWeights[i] || 0));
-        });
+        }
 
-        const segments = Array.from(teamMap.entries()).map((entry) => {
-            const [teamId, weight] = entry as [number, number];
-            const config = TEAM_COLORS[teamId];
+        const segments = Array.from(teamMap.entries()).map(([teamId, weight]) => {
+            const tId = teamId as number;
+            const config = TEAM_COLORS[tId];
             return {
-                id: teamId,
+                id: tId,
                 label: config.name,
-                weight: weight,
+                weight: weight as number,
                 color: config.hex,
                 textColor: '#fff'
             };
@@ -354,7 +355,7 @@ export const BattleReplay: React.FC = () => {
     useEffect(() => {
         if (showTiebreaker && !tiebreakerSpinning && !tiebreakerResult && replayData) {
             const teams = Array.from(new Set(replayData.result.player_teams));
-            const randomWinnerTeam = teams[Math.floor(Math.random() * teams.length)];
+            const randomWinnerTeam = teams[Math.floor(Math.random() * teams.length)] as number;
             const winnerConfig = TEAM_COLORS[randomWinnerTeam];
             
             setTiebreakerSpinning(true);
@@ -496,7 +497,7 @@ export const BattleReplay: React.FC = () => {
             <div className={`flex-1 grid grid-cols-2 lg:grid-cols-${Math.min(numPlayers, 4)} xl:grid-cols-${Math.min(numPlayers, 6)} gap-2 md:gap-4 items-center p-1 relative z-30`}>
                 {displayIndices.map((idx: number) => {
                     const teamId = result.player_teams[idx] ?? (idx % 2); 
-                    const tConfig = TEAM_COLORS[teamId] || TEAM_COLORS[0];
+                    const tConfig = TEAM_COLORS[teamId as number] || TEAM_COLORS[0];
                     const isWinner = isFinished && teamId === winnerTeamId;
                     const roundResult = roundResults[idx];
 

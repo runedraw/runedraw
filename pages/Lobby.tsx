@@ -100,6 +100,7 @@ export const Lobby: React.FC = () => {
                             <img 
                                 src={getBoxImageUrl(box.image)}
                                 alt={box.name}
+                                crossOrigin="anonymous"
                                 className="w-32 h-32 object-contain drop-shadow-lg group-hover:animate-float brightness-110"
                                 onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/150?text=Box'; }}
                             />

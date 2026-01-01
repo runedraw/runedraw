@@ -1,6 +1,6 @@
 
 import { supabase } from './supabase';
-import { BoxInfo, BoxItem, SpinResult, BattleResult, BattleMode, BattleRule, RewardsState, BattleRoomData, Transaction, BattleHistoryV2Row, UnlockEntry, BattleRoll, CoinFlipEntry } from '../types';
+import { BoxInfo, BoxItem, SpinResult, BattleResult, BattleMode, BattleRule, RewardsState, BattleRoomData, Transaction, BattleHistoryV2Row, UnlockEntry, BattleRoll, CoinFlipEntry, CoinPackage } from '../types';
 import { normalizeItemImageName } from '../constants';
 
 /**
@@ -15,7 +15,7 @@ const generateUUID = () => {
 };
 
 export const GameService = {
-  // ... Existing methods (getBoxes, getBoxItems, getAllBoxItems, getUserData, getActiveBattles, etc.) ...
+  // ... Existing methods ...
   async getBoxes(): Promise<BoxInfo[]> {
     const { data, error } = await supabase
       .from('box_info')
@@ -48,8 +48,6 @@ export const GameService = {
         const count = items?.filter(i => normalizeTier(i.tier) === t).length || 1;
         const weights = tierOddsMap[t] || { raw: 100, golden: 100 };
 
-        // AUTO-GENERATE IMAGE IF MISSING
-        // We enforce the normalized name so the UI always has a PNG path to look for
         let imagePath = item.image;
         if (!imagePath && item.item_name) {
             imagePath = normalizeItemImageName(item.item_name);
@@ -82,7 +80,6 @@ export const GameService = {
         return tierMap[lower] || lower; 
       };
 
-      // Process odds into a lookup map: boxId -> tier -> {raw, golden}
       const oddsMap: Record<number, Record<string, { raw: number, golden: number }>> = {};
       if (odds) {
           odds.forEach((o: any) => {
@@ -92,7 +89,6 @@ export const GameService = {
           });
       }
 
-      // Count items per box/tier to distribute weight
       const boxTierCounts: Record<number, Record<string, number>> = {};
       items.forEach((item: any) => {
           const bid = item.box_id;
@@ -111,7 +107,7 @@ export const GameService = {
 
           const t = normalizeTier(item.tier);
           const count = boxTierCounts[item.box_id]?.[t] || 1;
-          const boxOdds = oddsMap[item.box_id]?.[t] || { raw: 100, golden: 100 }; // Default fallback
+          const boxOdds = oddsMap[item.box_id]?.[t] || { raw: 100, golden: 100 };
 
           grouped[item.box_id].push({
             item_id: item.item_id,
@@ -130,7 +126,7 @@ export const GameService = {
     const { data: user, error } = await supabase.from('user_data').select('*').eq('id', userId).maybeSingle();
     if (error) throw new Error(error.message);
     
-    const { data: xpData, error: xpError } = await supabase.from('xp_transactions').select('amount').eq('user_id', userId);
+    const { data: xpData } = await supabase.from('xp_transactions').select('amount').eq('user_id', userId);
     const totalXp = xpData ? xpData.reduce((sum, row) => sum + (row.amount || 0), 0) : 0;
 
     if (!user) {
@@ -669,5 +665,46 @@ export const GameService = {
           created_at: new Date().toISOString()
       });
       return newBalance;
+  },
+
+  // --- TOP UP / DAILY COIN SYSTEM ---
+
+  async getDailyCoinStatus(userId: string): Promise<{ ready: boolean, remainingMs: number }> {
+      const { data } = await supabase
+        .from('transaction_history')
+        .select('created_at')
+        .eq('user_id', userId)
+        .eq('source', 'DAILY_ALLOWANCE')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!data) return { ready: true, remainingMs: 0 };
+      
+      const lastClaim = new Date(data.created_at).getTime();
+      const now = Date.now();
+      const cooldown = 24 * 60 * 60 * 1000;
+      const diff = (lastClaim + cooldown) - now;
+      
+      if (diff > 0) return { ready: false, remainingMs: diff };
+      return { ready: true, remainingMs: 0 };
+  },
+
+  // Secure Backend Claim via RPC
+  async claimDailyCoins(userId: string): Promise<number> {
+      const { data, error } = await supabase.rpc('claim_daily_allowance');
+      if (error) throw new Error(error.message);
+      if (!data.success) throw new Error(data.message || "Daily cooldown active.");
+      return data.new_balance;
+  },
+
+  // Stripe Checkout Initiation
+  async initiateStripeCheckout(userId: string, packageId: string): Promise<string> {
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+          body: { packageId }
+      });
+      if (error) throw new Error(error.message);
+      if (!data?.url) throw new Error("Failed to create payment session");
+      return data.url;
   }
 };

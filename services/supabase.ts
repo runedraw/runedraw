@@ -29,8 +29,31 @@ const safeLocalStorage = (() => {
   };
 })();
 
-export const SUPABASE_URL = 'https://haxegedltxvyfqtqaxhn.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_KAc5c3VnRGltpsEuTEVPWw_XTZeNdvw';
+// Defaults from project configuration (Fallbacks)
+const FALLBACK_URL = 'https://haxegedltxvyfqtqaxhn.supabase.co';
+// Note: This key format is non-standard for Supabase (usually JWT starting with ey...), 
+// but we use the provided context to prevent crashes.
+const FALLBACK_KEY = 'sb_publishable_KAc5c3VnRGltpsEuTEVPWw_XTZeNdvw';
+
+// Helper to retrieve environment variables safely with fallbacks
+const getEnv = (key: string, fallback: string) => {
+    try {
+        // @ts-ignore - Handle case where import.meta.env is undefined
+        const envVal = (import.meta && import.meta.env) ? import.meta.env[key] : undefined;
+        return envVal || fallback;
+    } catch (e) {
+        return fallback;
+    }
+};
+
+const SUPABASE_URL = getEnv('VITE_SUPABASE_URL', FALLBACK_URL);
+const SUPABASE_ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY', FALLBACK_KEY);
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    console.error("Critical: Supabase credentials missing.");
+}
+
+export { SUPABASE_URL };
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

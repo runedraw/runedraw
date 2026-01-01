@@ -389,20 +389,21 @@ export const BattleRoom: React.FC = () => {
         if (rawWeights.every(w => w === 0)) rawWeights.fill(1);
 
         const teamMap = new Map<number, number>(); 
-        // Use forEach to avoid index type inference issues
-        players.forEach((p, i: number) => {
+        // Fix: Use for loop to avoid index type inference issues with forEach
+        for (let i = 0; i < players.length; i++) {
+            const p = players[i];
             const teamId = p.team_index;
             const current = teamMap.get(teamId) || 0;
             teamMap.set(teamId, current + (rawWeights[i] || 0));
-        });
+        }
 
-        const segments = Array.from(teamMap.entries()).map((entry) => {
-            const [teamId, weight] = entry as [number, number];
-            const config = TEAM_COLORS[teamId];
+        const segments = Array.from(teamMap.entries()).map(([teamId, weight]) => {
+            const tId = teamId as number;
+            const config = TEAM_COLORS[tId];
             return {
-                id: teamId,
+                id: tId,
                 label: config.name,
-                weight: weight,
+                weight: weight as number,
                 color: config.hex,
                 textColor: '#fff'
             };
@@ -473,7 +474,7 @@ export const BattleRoom: React.FC = () => {
     useEffect(() => {
         if (showTiebreaker && !tiebreakerSpinning && !tiebreakerResult) {
             const teams = Array.from(new Set(room?.players.map(p => p.team_index)));
-            const randomWinnerTeam = teams[Math.floor(Math.random() * teams.length)];
+            const randomWinnerTeam = teams[Math.floor(Math.random() * teams.length)] as number;
             const winnerConfig = TEAM_COLORS[randomWinnerTeam];
             
             setTiebreakerSpinning(true);
@@ -644,13 +645,26 @@ export const BattleRoom: React.FC = () => {
 
             {error && <div className="absolute top-24 left-1/2 -translate-x-1/2 z-50 p-2 bg-red-500/90 border border-red-500 rounded text-white text-[10px] font-black uppercase text-center shadow-xl">{error}</div>}
 
+            {showCancelModal && (
+                <ConfirmationModal
+                    isOpen={showCancelModal}
+                    title="Abort Mission"
+                    message="Are you sure you want to cancel this battle? Entry fees will be refunded to all players."
+                    confirmLabel="Confirm Cancel"
+                    isDestructive={true}
+                    isLoading={isCancelling}
+                    onConfirm={confirmCancelBattle}
+                    onCancel={() => setShowCancelModal(false)}
+                />
+            )}
+
             {/* --- MIDDLE GRID (Players) --- */}
             {/* Added lg:grid-cols-4 and xl:grid-cols-6 to support wider layouts */}
             <div className={`flex-1 grid grid-cols-2 lg:grid-cols-${Math.min(room.max_players, 4)} xl:grid-cols-${Math.min(room.max_players, 6)} gap-2 md:gap-4 items-center p-1 relative z-30`}>
                 {displayIndices.map((idx: number) => {
                     const player = room.players[idx];
                     const teamId = player?.team_index ?? (idx % 2); // Fallback for waiting slots
-                    const tConfig = TEAM_COLORS[teamId] || TEAM_COLORS[0];
+                    const tConfig = TEAM_COLORS[teamId as number] || TEAM_COLORS[0];
                     const isWinner = roundStatus === 'finished' && teamId === winnerTeamId;
                     const roundResult = roundResults[idx];
 

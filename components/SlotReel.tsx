@@ -442,6 +442,7 @@ export const SlotReel: React.FC<SlotReelProps> = ({ spinning, result, pool, isVe
                                 <img 
                                     src={item.icon} 
                                     alt={item.name} 
+                                    crossOrigin="anonymous"
                                     className="w-full h-full object-contain drop-shadow-md brightness-125" 
                                 />
                             ) : (

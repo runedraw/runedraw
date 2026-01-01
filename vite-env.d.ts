@@ -1,0 +1,12 @@
+// Manually define the Vite env types since vite/client is missing
+// This fixes "Property 'env' does not exist on type 'ImportMeta'" errors
+
+interface ImportMetaEnv {
+  readonly VITE_SUPABASE_URL: string;
+  readonly VITE_SUPABASE_ANON_KEY: string;
+  [key: string]: any;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}

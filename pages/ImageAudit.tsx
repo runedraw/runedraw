@@ -44,6 +44,7 @@ export const ImageAudit: React.FC = () => {
                     const url = getItemImageUrl(item.image || '');
                     
                     const img = new Image();
+                    img.crossOrigin = "anonymous"; // Fix for cloudflare cookies
                     img.onload = () => {
                         setFound(prev => [...prev, { name: item.name, filename: item.image, url }]);
                         completedCount++;
@@ -162,7 +163,7 @@ export const ImageAudit: React.FC = () => {
                         {found.map((item, i) => (
                             <div key={i} className="flex items-center gap-3 p-2 bg-black/40 border border-white/5 rounded hover:bg-green-500/10 transition-colors">
                                 <div className="w-10 h-10 bg-black/50 rounded flex items-center justify-center shrink-0">
-                                    <img src={item.url} className="w-full h-full object-contain brightness-125" alt="" />
+                                    <img src={item.url} crossOrigin="anonymous" className="w-full h-full object-contain brightness-125" alt="" />
                                 </div>
                                 <div className="min-w-0">
                                     <div className="font-bold text-white text-xs truncate">{item.name}</div>

@@ -172,3 +172,10 @@ export interface UnlockEntry {
     created_at: string;
     related_id?: number | null;
 }
+
+export interface CoinPackage {
+    id: string;
+    priceUsd: number;
+    coins: number;
+    label?: string;
+}
